@@ -31,23 +31,24 @@ venv.bak/
 .ipynb_checkpoints
 *.ipynb
 
-# Data files
-data/*.csv
+# Data files (keep CSV for deployment)
+# data/*.csv
 data/*.xlsx
-data/*.json
+# data/*.json
 !data/README.md
 
-# Model files (large binary files)
-models/*.pkl
-models/*.h5
-models/*.json
+# Model files - COMMENTED OUT FOR DEPLOYMENT
+# Models need to be in repo for Streamlit Cloud
+# models/*.pkl
+# models/*.h5
+# models/*.json
 
-# Results and outputs
+# Results and outputs - KEEP CSVs and JSONs for deployment
 results/*.html
 results/*.png
 results/*.jpg
-results/*.csv
-results/*.json
+# results/*.csv
+# results/*.json
 results/confusion_matrices/*
 results/roc_curves/*
 results/cluster_plots/*
