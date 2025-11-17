@@ -8,8 +8,6 @@ CO3: Supervised Learning - Multiple classification models with comprehensive eva
 CO4: Unsupervised Learning - K-Means clustering and Association Rule Mining
 CO5: Neural Networks - Deep learning with TensorFlow/Keras
 
-Author: ML Lab Assignment
-Date: 2025
 """
 
 import warnings
@@ -81,12 +79,16 @@ class BankChurnModelTrainer:
     """
 
     def __init__(self, data_path='data/Churn_Modelling.csv'):
-        """
-        Initialize the trainer.
-
-        Args:
-            data_path: Path to the dataset CSV file
-        """
+        # Purpose: Initialize the training pipeline object and allocate placeholders for
+        #          data, preprocessing artifacts, trained models and results.
+        # What: Constructor for BankChurnModelTrainer. It sets default file paths and
+        #       internal attributes used across the pipeline (dataframes, scalers,
+        #       encoder placeholders, model/result stores).
+        # Why: Centralizes configuration so other methods can rely on pre-initialized
+        #      attributes and simplifies running the full pipeline from a single entry.
+        # Params:
+        #   - data_path (str): path to input CSV. Default 'data/Churn_Modelling.csv'.
+        #     This allows the pipeline to locate and load the training dataset.
         self.data_path = data_path
         self.df = None
         self.df_processed = None
@@ -112,9 +114,11 @@ class BankChurnModelTrainer:
         print("="*80)
 
     def load_and_explore_data(self):
-        """
-        CO2: Load dataset and perform Exploratory Data Analysis (EDA).
-        """
+        # Purpose: Load the raw dataset and perform initial exploratory analysis.
+        # What: Reads CSV into a pandas DataFrame, prints basic summaries, checks
+        #       for missing values, and computes target distribution statistics.
+        # Why: Understand data quality and target imbalance before preprocessing.
+        # Params: None. Uses self.data_path provided during initialization.
         print("\n[STEP 1] LOADING AND EXPLORING DATA")
         print("-" * 80)
 
@@ -156,9 +160,12 @@ class BankChurnModelTrainer:
         print("\n[STEP 1] COMPLETED: Data loaded and explored successfully")
 
     def _create_eda_plots(self):
-        """
-        Create and save EDA visualizations.
-        """
+        # Purpose: Produce and persist exploratory visualizations for reporting.
+        # What: Generates pie charts, bar charts, histograms and a correlation heatmap
+        #       (saved as interactive HTML files in results/).
+        # Why: Visual aids help identify feature distributions, correlations and
+        #      demographic patterns relevant to churn.
+        # Params: None. Reads from self.df which must be set by load_and_explore_data().
         print("\nGenerating EDA visualizations...")
 
         # 1. Target distribution
@@ -226,15 +233,16 @@ class BankChurnModelTrainer:
         print("EDA plots saved to results/ directory")
 
     def preprocess_data(self):
-        """
-        CO2: Comprehensive data preprocessing pipeline.
-        - Handle missing values
-        - Feature engineering
-        - Encode categorical variables
-        - Train-test split
-        - Feature scaling
-        - Handle class imbalance with SMOTE
-        """
+        # Purpose: Prepare raw data into a modeling-ready format.
+        # What: Handles missing values, performs feature engineering (ratios and
+        #       categorical binning), encodes categorical variables, splits into
+        #       train/test sets, scales numeric features and applies SMOTE to
+        #       balance the training set.
+        # Why: Standardization of features, encoding and class balancing are
+        #      required for reliable training across multiple model types.
+        # Params: None (operates on self.df). Produces attributes used later:
+        #   - self.X_train_scaled, self.X_test_scaled, self.y_train, self.y_test,
+        #   - self.scaler, self.feature_names, self.label_encoder_gender
         print("\n[STEP 2] DATA PREPROCESSING")
         print("-" * 80)
 
@@ -364,10 +372,15 @@ class BankChurnModelTrainer:
         print("\n[STEP 2] COMPLETED: Data preprocessing finished")
 
     def train_traditional_models(self):
-        """
-        CO3: Train multiple supervised learning classification models.
-        Models: Logistic Regression, Decision Tree, Random Forest, XGBoost, SVM, Gradient Boosting
-        """
+        # Purpose: Train a suite of traditional supervised classifiers and evaluate them.
+        # What: Fits Logistic Regression, Decision Tree, Random Forest, XGBoost,
+        #       SVM and Gradient Boosting on the preprocessed training data, then
+        #       evaluates on the test set to compute standard metrics.
+        # Why: Provides baseline and ensemble comparisons; different algorithms
+        #      capture different signal patterns (linear vs tree-based vs kernel).
+        # Params: Uses self.X_train_scaled, self.y_train and self.X_test_scaled.
+        #       Model hyperparameters are chosen for reasonable defaults to
+        #       balance performance and training time.
         print("\n[STEP 3] TRAINING TRADITIONAL ML MODELS")
         print("-" * 80)
 
@@ -444,10 +457,14 @@ class BankChurnModelTrainer:
         print("\n[STEP 3] COMPLETED: Traditional models trained successfully")
 
     def hyperparameter_tuning(self):
-        """
-        CO1: AI-based Heuristic Techniques - Grid Search CV for hyperparameter optimization.
-        Optimize Random Forest and XGBoost models.
-        """
+        # Purpose: Improve model performance by searching for better hyperparameters.
+        # What: Runs GridSearchCV for Random Forest and XGBoost over predefined
+        #       parameter grids using 5-fold CV and optimizing recall (priority
+        #       is to catch churners).
+        # Why: Tuning boosts recall and overall robustness; recall is prioritized
+        #      because false negatives (missed churners) are costly to the business.
+        # Params: Parameter grids defined inside method (n_estimators, max_depth,
+        #       learning_rate, subsample, etc.). Uses self.X_train_scaled/self.y_train.
         print("\n[STEP 4] HYPERPARAMETER OPTIMIZATION (GRID SEARCH CV)")
         print("-" * 80)
         print("CO1: AI-based Heuristic Techniques")
@@ -557,9 +574,16 @@ class BankChurnModelTrainer:
         print("Grid Search demonstrates CO1: AI-based heuristic search improves model performance")
 
     def train_neural_network(self):
-        """
-        CO5: Train Artificial Neural Network using TensorFlow/Keras.
-        """
+        # Purpose: Train a deep neural network to capture complex non-linear interactions.
+        # What: Builds a Sequential Keras model (Dense layers with BatchNorm + Dropout)
+        #       and trains it with Adam optimizer, binary cross-entropy loss and AUC metric.
+        # Why: Neural networks can model higher-order feature interactions that
+        #      tree-based models may not capture; used as an additional model type.
+        # Params:
+        #   - architecture: [128, 64, 32] hidden units with ReLU
+        #   - regularization: Dropout (0.3/0.2) and BatchNormalization
+        #   - training: epochs=100, batch_size=32, validation_split=0.2,
+        #     early stopping (patience=15), checkpoint saving to models/neural_network.h5
         print("\n[STEP 5] TRAINING NEURAL NETWORK")
         print("-" * 80)
         print("CO5: Neural Networks - Deep Learning with TensorFlow/Keras")
@@ -662,9 +686,10 @@ class BankChurnModelTrainer:
         print("\n[STEP 5] COMPLETED: Neural Network trained successfully")
 
     def _plot_training_history(self, history):
-        """
-        Plot and save neural network training history.
-        """
+        # Purpose: Visualize NN training curves (accuracy and loss) for diagnosis.
+        # What: Reads the Keras History object and saves interactive plots to disk.
+        # Why: Helps to inspect overfitting/underfitting and adjust training settings.
+        # Params: history (keras.callbacks.History) returned by model.fit()
         print("\nGenerating training history plots...")
 
         fig = make_subplots(
@@ -707,9 +732,15 @@ class BankChurnModelTrainer:
         print("Training history saved to results/nn_training_history.html")
 
     def _calculate_metrics(self, y_true, y_pred, y_pred_proba):
-        """
-        Calculate comprehensive evaluation metrics.
-        """
+        # Purpose: Compute standard classification and performance metrics.
+        # What: Returns accuracy, precision, recall, f1, roc_auc, confusion matrix
+        #       and classification report to summarize model results.
+        # Why: These metrics provide both algorithmic and business-relevant
+        #      performance measures to compare models.
+        # Params:
+        #   - y_true: ground truth labels
+        #   - y_pred: predicted class labels
+    #   - y_pred_proba: predicted probabilities for positive class
         return {
             'accuracy': accuracy_score(y_true, y_pred),
             'precision': precision_score(y_true, y_pred, zero_division=0),
@@ -721,9 +752,13 @@ class BankChurnModelTrainer:
         }
 
     def perform_clustering(self):
-        """
-        CO4: Unsupervised Learning - K-Means Clustering for customer segmentation.
-        """
+        # Purpose: Segment customers into homogeneous groups using K-Means.
+        # What: Selects business-relevant features, scales them, uses elbow method
+        #       to select K, fits KMeans, and generates cluster profiles and visualizations.
+        # Why: Segmentation supports targeted retention strategies and identifies
+        #      high-value but at-risk groups for prioritization.
+        # Params: Uses original dataframe self.df and clustering feature list:
+        #   ['Age','Balance','Tenure','NumOfProducts','CreditScore']
         print("\n[STEP 6] CUSTOMER SEGMENTATION (K-MEANS CLUSTERING)")
         print("-" * 80)
         print("CO4: Unsupervised Learning - K-Means Clustering")
@@ -794,6 +829,7 @@ class BankChurnModelTrainer:
                 'Avg_Balance': cluster_data['Balance'].mean(),
                 'Avg_Tenure': cluster_data['Tenure'].mean(),
                 'Avg_NumOfProducts': cluster_data['NumOfProducts'].mean(),
+                'Avg_IsActiveMember': cluster_data['IsActiveMember'].mean(),
                 'Churn_Rate': cluster_data['Exited'].mean() * 100
             }
             cluster_profiles.append(profile)
@@ -844,9 +880,13 @@ class BankChurnModelTrainer:
         print("\n[STEP 6] COMPLETED: Customer segmentation finished")
 
     def perform_association_rules(self):
-        """
-        CO4: Unsupervised Learning - Association Rule Mining using Apriori algorithm.
-        """
+        # Purpose: Discover frequent patterns and rules associated with churn.
+        # What: Discretizes continuous features, converts rows to transaction lists,
+        #       runs Apriori to find frequent itemsets and derives rules filtered
+        #       for those predicting Exited=1 (churn).
+        # Why: Association rules provide interpretable business insights to
+        #      design targeted interventions (e.g., rule-based retention offers).
+        # Params: min_support=0.02 and min_confidence=0.70 are used as thresholds.
         print("\n[STEP 7] ASSOCIATION RULE MINING")
         print("-" * 80)
         print("CO4: Unsupervised Learning - Pattern Discovery with Apriori Algorithm")
@@ -957,9 +997,12 @@ class BankChurnModelTrainer:
         print("\n[STEP 7] COMPLETED: Association rule mining finished")
 
     def evaluate_and_compare_models(self):
-        """
-        Comprehensive model evaluation and comparison.
-        """
+        # Purpose: Aggregate model metrics, compare models and produce evaluation plots.
+        # What: Builds a comparison table, identifies best models by recall and AUC,
+        #       and triggers visualizations (ROC, confusion matrices, business cost).
+        # Why: Enables selection of the operational model(s) balancing business cost
+        #      and detection performance (recall/ROC-AUC).
+        # Params: Operates on self.results and self.models populated by training steps.
         print("\n[STEP 8] MODEL EVALUATION AND COMPARISON")
         print("-" * 80)
 
@@ -999,9 +1042,11 @@ class BankChurnModelTrainer:
         print("\n[STEP 8] COMPLETED: Model evaluation finished")
 
     def _generate_evaluation_plots(self):
-        """
-        Generate comprehensive evaluation visualizations.
-        """
+        # Purpose: Create a suite of visual artifacts for model comparison and business reporting.
+        # What: Produces metrics comparison bars, ROC curves, confusion matrices and
+        #       business cost charts and writes them to the results/ directory.
+        # Why: Visual outputs support stakeholders and facilitate model selection.
+        # Params: Uses self.results and self.models populated previously.
         print("\n[8.3] Generating Evaluation Plots")
 
         # 1. Metrics comparison bar chart
@@ -1116,9 +1161,12 @@ class BankChurnModelTrainer:
         print("All evaluation plots generated and saved to results/")
 
     def save_models(self):
-        """
-        Save all trained models, encoders, and scalers.
-        """
+        # Purpose: Persist trained models and preprocessing artifacts for deployment.
+        # What: Saves scikit-learn models (joblib), the scaler, label encoder and
+        #       a JSON summary of results. Neural network model is saved during training.
+        # Why: Allows the Streamlit app and other systems to load models without
+        #      retraining, enabling fast inference in production.
+        # Params: None. Reads from self.models, self.scaler and self.feature_names.
         print("\n[STEP 9] SAVING MODELS AND ARTIFACTS")
         print("-" * 80)
 
@@ -1169,9 +1217,13 @@ class BankChurnModelTrainer:
         print("\n[STEP 9] COMPLETED: All models and artifacts saved successfully")
 
     def run_complete_pipeline(self):
-        """
-        Execute the complete training pipeline covering all 5 COs.
-        """
+        # Purpose: Orchestrate end-to-end execution of the training pipeline.
+        # What: Sequentially runs data loading, preprocessing, model training,
+        #       hyperparameter tuning, neural network training, clustering,
+        #       association rules, evaluation and model saving.
+        # Why: Provides a single-call entry point for reproducing all experiments
+        #      and generating results/artifacts for reporting.
+        # Params: None. Uses internal attributes and methods to carry out each step.
         print("\n\nSTARTING COMPLETE TRAINING PIPELINE")
         print("=" * 80)
 

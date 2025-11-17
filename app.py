@@ -652,7 +652,7 @@ def page_predict():
 
             with col1:
                 st.markdown("### Churn Probability")
-                st.progress(probability)
+                st.progress(float(probability))  # Convert numpy.float32 to Python float
                 st.markdown(f"<h1 style='text-align: center; color: #dc2626;'>{probability*100:.1f}%</h1>",
                            unsafe_allow_html=True)
 

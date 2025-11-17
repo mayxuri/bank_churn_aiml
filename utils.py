@@ -158,46 +158,19 @@ def interpret_cluster(cluster_stats: pd.Series, cluster_id: int) -> Tuple[str, s
     Returns:
         Tuple of (cluster_name, description, retention_strategies)
     """
-    avg_balance = cluster_stats.get('Balance', 0)
-    avg_products = cluster_stats.get('NumOfProducts', 0)
-    avg_active = cluster_stats.get('IsActiveMember', 0)
-    avg_tenure = cluster_stats.get('Tenure', 0)
+    avg_balance = cluster_stats.get('Avg_Balance', 0)
+    avg_products = cluster_stats.get('Avg_NumOfProducts', 0)
+    avg_active = cluster_stats.get('Avg_IsActiveMember', 0)
+    avg_tenure = cluster_stats.get('Avg_Tenure', 0)
     churn_rate = cluster_stats.get('Churn_Rate', 0)
+    avg_age = cluster_stats.get('Avg_Age', 0)
 
-    # Define cluster profiles based on characteristics
-    if avg_balance > 100000 and avg_products >= 2 and avg_active > 0.7:
-        name = "Premium Loyalists"
-        description = f"High-value customers (avg balance: ${avg_balance:,.0f}) with multiple products and high engagement. Low churn risk ({churn_rate:.1f}%)."
-        strategies = [
-            "Maintain VIP status with exclusive benefits",
-            "Offer premium financial advisory services",
-            "Provide early access to new investment products",
-            "Assign dedicated relationship managers"
-        ]
+    # Priority-based classification system for distinct cluster names
 
-    elif avg_balance > 80000 and avg_active < 0.4 and avg_products < 2:
-        name = "At-Risk High-Value"
-        description = f"High balance (${avg_balance:,.0f}) but low engagement and single product. Critical churn risk ({churn_rate:.1f}%)."
-        strategies = [
-            "URGENT: Launch personalized re-engagement campaign",
-            "Offer product bundling with attractive discounts",
-            "Schedule proactive financial review meetings",
-            "Implement win-back offers before they leave"
-        ]
-
-    elif avg_tenure > 6 and churn_rate < 15:
-        name = "Stable Long-Term"
-        description = f"Long-standing customers (avg {avg_tenure:.1f} years tenure) with stable relationship. Reliable segment ({churn_rate:.1f}% churn)."
-        strategies = [
-            "Reward loyalty with tenure-based benefits",
-            "Cross-sell additional products",
-            "Maintain regular communication",
-            "Anniversary recognition programs"
-        ]
-
-    elif avg_balance < 30000 and avg_active < 0.5:
-        name = "Dormant Accounts"
-        description = f"Low balance (${avg_balance:,.0f}) and inactive. Highest churn risk ({churn_rate:.1f}%)."
+    # 1. Check for dormant/low-value accounts first
+    if avg_balance < 10000 and avg_active < 0.5:
+        name = "Dormant Low-Value"
+        description = f"Very low balance (${avg_balance:,.0f}) and inactive. Minimal engagement with {avg_products:.1f} products. Churn rate: {churn_rate:.1f}%."
         strategies = [
             "Cost-effective digital re-activation campaigns",
             "Special promotions to increase balance",
@@ -205,9 +178,44 @@ def interpret_cluster(cluster_stats: pd.Series, cluster_id: int) -> Tuple[str, s
             "Consider account maintenance fee waivers"
         ]
 
-    elif avg_products >= 2 and avg_active > 0.6:
+    # 2. Check for high churn rate clusters (>40% is critical)
+    elif churn_rate > 40:
+        name = "Critical High-Risk"
+        description = f"URGENT: Very high churn rate ({churn_rate:.1f}%). Average age {avg_age:.0f}, balance ${avg_balance:,.0f}, {avg_products:.1f} products. Requires immediate intervention."
+        strategies = [
+            "URGENT: Immediate outreach by retention team within 24-48 hours",
+            "Authorize premium retention offers up to $300 value",
+            "Identify root causes through customer surveys",
+            "Personalized win-back campaigns with special incentives",
+            "Executive-level relationship management for high-value accounts"
+        ]
+
+    # 3. Premium high-value customers
+    elif avg_balance > 100000 and churn_rate < 15:
+        name = "Premium High-Value"
+        description = f"Affluent customers with high balance (${avg_balance:,.0f}), {avg_products:.1f} products. Low churn risk ({churn_rate:.1f}%). Key retention priority."
+        strategies = [
+            "Maintain VIP status with exclusive benefits",
+            "Offer premium financial advisory services",
+            "Provide early access to new investment products",
+            "Assign dedicated relationship managers"
+        ]
+
+    # 4. Mass affluent segment
+    elif avg_balance > 70000 and avg_balance <= 100000:
+        name = "Mass Affluent"
+        description = f"Upper-middle segment with solid balance (${avg_balance:,.0f}), {avg_products:.1f} products. Churn rate: {churn_rate:.1f}%. Growth potential."
+        strategies = [
+            "Upgrade path to premium tier with benefits",
+            "Cross-sell investment and wealth management products",
+            "Offer preferential interest rates and fee waivers",
+            "Financial planning workshops and seminars"
+        ]
+
+    # 5. Engaged multi-product customers
+    elif avg_products >= 2 and avg_active > 0.5:
         name = "Engaged Multi-Product"
-        description = f"Active customers with {avg_products:.1f} products on average. Good retention ({churn_rate:.1f}% churn)."
+        description = f"Active customers with {avg_products:.1f} products, balance ${avg_balance:,.0f}. Good engagement. Churn rate: {churn_rate:.1f}%."
         strategies = [
             "Upsell premium versions of existing products",
             "Introduce complementary services",
@@ -215,12 +223,46 @@ def interpret_cluster(cluster_stats: pd.Series, cluster_id: int) -> Tuple[str, s
             "Referral incentive programs"
         ]
 
+    # 6. Long-term stable customers
+    elif avg_tenure > 6:
+        name = "Stable Long-Term"
+        description = f"Loyal customers with {avg_tenure:.1f} years tenure, balance ${avg_balance:,.0f}. Reliable segment with {churn_rate:.1f}% churn."
+        strategies = [
+            "Reward loyalty with tenure-based benefits",
+            "Anniversary recognition and special offers",
+            "Maintain regular personalized communication",
+            "Cross-sell additional products"
+        ]
+
+    # 7. Moderate-risk moderate-value
+    elif churn_rate > 18 and churn_rate <= 40:
+        name = "Moderate Risk"
+        description = f"Medium churn risk ({churn_rate:.1f}%) with balance ${avg_balance:,.0f}, {avg_products:.1f} products. Requires proactive retention."
+        strategies = [
+            "Proactive retention campaigns",
+            "Identify and address pain points",
+            "Product bundling offers",
+            "Regular satisfaction check-ins"
+        ]
+
+    # 8. New/low-tenure customers
+    elif avg_tenure < 3:
+        name = "New Customers"
+        description = f"Recently acquired ({avg_tenure:.1f} years), balance ${avg_balance:,.0f}. Churn rate: {churn_rate:.1f}%. Critical onboarding phase."
+        strategies = [
+            "Enhanced onboarding programs",
+            "Welcome bonuses and incentives",
+            "Educational content on product features",
+            "Quick wins to demonstrate value"
+        ]
+
+    # 9. Fallback for any remaining clusters
     else:
-        name = "Standard Customers"
-        description = f"Average profile across metrics. Moderate churn risk ({churn_rate:.1f}%)."
+        name = "Core Standard"
+        description = f"Middle segment: {avg_tenure:.1f} years tenure, ${avg_balance:,.0f} balance, {avg_products:.1f} products. Churn: {churn_rate:.1f}%."
         strategies = [
             "Standard retention programs",
-            "Targeted product recommendations",
+            "Targeted product recommendations based on profile",
             "Regular satisfaction surveys",
             "Gradual engagement improvement initiatives"
         ]
