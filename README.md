@@ -1566,19 +1566,17 @@ def calculate_business_cost(confusion_matrix, fn_cost=1500, fp_cost=50):
 
 | Role | Name | GitHub | LinkedIn |
 |------|------|--------|----------|
-| 🎓 **Lead ML Engineer** | [Your Name] | [@yourusername](https://github.com/yourusername) | [Your Profile](https://linkedin.com/in/yourprofile) |
-| 📊 **Data Analyst** | [Team Member 2] | [@username2](https://github.com/username2) | [Profile 2](https://linkedin.com) |
-| 🎨 **UI/UX Designer** | [Team Member 3] | [@username3](https://github.com/username3) | [Profile 3](https://linkedin.com) |
+| 🎓 **AIML Engineer** | [Mayuri Dandekar] | [@mayxuri](https://github.com/mayxuri) | 
+| 📊 **AIML ENGINEER** | [Deepthi Reddy] | [@deeptive](https://github.com/deeptive) 
+
 
 </div>
 
 ### Academic Information
 
-**Institution**: [Your College/University Name]
+**Institution**: Cummins College of Engineering, Pune
 **Course**: Machine Learning Laboratory (AIML/CSE)
-**Semester**: [Your Semester] (2025)
-**Assignment**: Bank Customer Churn Prediction System
-**Grade**: A+ Expected (covers all 5 COs comprehensively)
+
 
 ### Acknowledgments
 
